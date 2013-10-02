@@ -18,8 +18,7 @@ public class ShapeManager {
 	private Shape selectedShape = null;
 	private boolean isShapeSelected = false;
 	
-	private static final int HIGHLIGHTER_X_Y = 10;
-	private static final int HIGHLIGHTER_WIDTH = 15;
+	private static final int HIGHLIGHTER_WIDTH = 10;
 
 	protected ShapeManager() {
 		// prevents instantiation
@@ -66,8 +65,8 @@ public class ShapeManager {
 		return this.isShapeSelected;
 	}
 	
-	public void createOutline(Shape selectedShape) {
-		this.selectedShape = selectedShape;
+	public void createOutline(int i) {
+		this.selectedShape = shapes.get(i);
 		isShapeSelected = true;
 		if (selectedShape instanceof Square) {
 			createOutlineForSquare((Square) selectedShape);
@@ -94,10 +93,10 @@ public class ShapeManager {
 		int yCenter = selectedShape.getYCenter();
 		int d = selectedShape.getWidth() / 2;
 		
-		Shape r1 = new Square(xCenter - d - HIGHLIGHTER_X_Y, yCenter - d - HIGHLIGHTER_X_Y, HIGHLIGHTER_WIDTH, Color.red);
-		Shape r2 = new Square(xCenter + d + HIGHLIGHTER_X_Y, yCenter - d - HIGHLIGHTER_X_Y, HIGHLIGHTER_WIDTH, Color.red);
-		Shape r3 = new Square(xCenter - d - HIGHLIGHTER_X_Y, yCenter + d + HIGHLIGHTER_X_Y, HIGHLIGHTER_WIDTH, Color.red);
-		Shape r4 = new Square(xCenter + d + HIGHLIGHTER_X_Y, yCenter + d + HIGHLIGHTER_X_Y, HIGHLIGHTER_WIDTH, Color.red);
+		Shape r1 = new Square(xCenter - d - HIGHLIGHTER_WIDTH, yCenter - d - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
+		Shape r2 = new Square(xCenter + d, yCenter - d - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
+		Shape r3 = new Square(xCenter - d - HIGHLIGHTER_WIDTH, yCenter + d, HIGHLIGHTER_WIDTH, Color.red);
+		Shape r4 = new Square(xCenter + d, yCenter + d, HIGHLIGHTER_WIDTH, Color.red);
 		
 		topHighlighters =  new Square[2];
 		bottomHighlighters = new Square[2];

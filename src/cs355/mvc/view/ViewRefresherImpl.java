@@ -68,7 +68,6 @@ public class ViewRefresherImpl implements ViewRefresher {
 			drawSquare(g2d, (Square)bottomOutline[0]);
 			drawSquare(g2d, (Square)bottomOutline[1]);
 		}
-		System.out.println("Drawing highlights!");
 	}
 	
 	private void drawRectangle(Graphics2D g2d, Rectangle r) {

@@ -24,7 +24,6 @@ public class MyListener extends MouseInputAdapter {
 	ButtonSelected buttonSelected;
 	
 	private Point origin;
-	private Shape selectedShape;
 	
 	private List<Point> trianglePoints;
 	
@@ -39,16 +38,14 @@ public class MyListener extends MouseInputAdapter {
 		if (buttonSelected == null || buttonSelected == ButtonSelected.TRIANGLE)
 			return;
 		if (buttonSelected == ButtonSelected.SELECT) {
-			selectedShape = select(e.getX(), e.getY());
-			if (selectedShape != null) {
-				System.out.println("Creating outline");
-				shapeManager.createOutline(selectedShape);
+			int i = select(e.getX(), e.getY()); // index of shape in list
+			if (i != -1) {
+				shapeManager.createOutline(i);
 			}
+			GUIFunctions.refresh();
 		}
 		trianglePoints.clear();
 		origin = e.getPoint();
-		System.out.println("About to refresh...");
-		GUIFunctions.refresh();
 	}
 	
 	public void mouseDragged(MouseEvent e) {
@@ -62,8 +59,6 @@ public class MyListener extends MouseInputAdapter {
 		if (buttonSelected == null)
 			return;
 		if (buttonSelected == ButtonSelected.SELECT) {
-			System.out.println("RELEASED!");
-			refresh();
 			return;
 		}
 		if (buttonSelected == ButtonSelected.TRIANGLE) {
@@ -76,10 +71,6 @@ public class MyListener extends MouseInputAdapter {
 			updateSize(e, true);
 	}
 	
-	private void refresh() {
-		GUIFunctions.refresh();
-	}
-
 	private void updateSize(MouseEvent e, boolean finishedDrawing) {
 		switch (buttonSelected) {
 		case RECTANGLE:
@@ -227,19 +218,36 @@ public class MyListener extends MouseInputAdapter {
 		trianglePoints.clear();
 	}
 	
-	private Shape select(int x, int y) {
+	private int select(int x, int y) {
 		List<Shape> shapes = shapeManager.getShapes();
 		for (int i = shapes.size() - 1; i >= 0; i--) {
+			
 			if (shapes.get(i) instanceof Square) {
 				Square selected = (Square) shapes.get(i);
 				if (testInSquare(selected, x, y)) {
 					System.out.println("You selected a square!");
-					return shapes.get(i);
+					return i;
 				}
 			}
 			
 		}
-		return null;
+		return -1;
+	}
+	
+	// 1, 2, 3 or 4 or 0 if not selected
+	private int checkIfSelectedHandles(int qx, int qy) {
+		Shape[] top = shapeManager.getTopOutline();
+		Shape[] bottom = shapeManager.getBottomOutline();
+		if (testInSquare((Square)top[0], qx, qy))
+			return 1;
+		else if (testInSquare((Square)top[1], qx, qy))
+			return 2;
+		else if(testInSquare((Square)bottom[0], qx, qy))
+			return 3;
+		else if(testInSquare((Square)bottom[1], qx, qy))
+			return 4;
+		
+		return 0;
 	}
 	
 	private boolean testInSquare(Square square, int qx, int qy) {

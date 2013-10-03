@@ -11,62 +11,47 @@ import cs355.mvc.model.Ellipse;
 import cs355.mvc.model.Line;
 import cs355.mvc.model.Rectangle;
 import cs355.mvc.model.Shape;
-import cs355.mvc.model.ShapeManager;
 import cs355.mvc.model.Square;
 import cs355.mvc.model.Triangle;
+import cs355.mvc.model.manage.HandleSelectorManager;
+import cs355.mvc.model.manage.ShapeManager;
 
 public class ViewRefresherImpl implements ViewRefresher {
 	
 	private ShapeManager shapeManager;
+	private HandleSelectorManager handleManager;
 	private CS355ControllerImpl controller;
 
 	public ViewRefresherImpl() {
 		shapeManager = ShapeManager.getInstance();
+		handleManager = HandleSelectorManager.getInstance();
 		controller = CS355ControllerImpl.getInstance();
 	}
 
 	@Override
 	public void refreshView(Graphics2D g2d) {		
-		// Update the canvas with all previously drawn shapes...
 		List<Shape> shapes = shapeManager.getShapes();
 		for (Shape s : shapes) {
-			if (s.getClass() == Rectangle.class)
+			if (s instanceof Rectangle)
 				drawRectangle(g2d, (Rectangle)s);
-			if (s.getClass() == Square.class)
+			if (s instanceof Square)
 				drawSquare(g2d, (Square)s);
-			if (s.getClass() == Line.class)
+			if (s instanceof Line)
 				drawLine(g2d, (Line)s);
-			if (s.getClass() == Ellipse.class)
+			if (s instanceof Ellipse)
 				drawEllipse(g2d, (Ellipse)s);
-			if (s.getClass() == Circle.class)
+			if (s instanceof Circle)
 				drawCircle(g2d, (Circle)s);
-			if (s.getClass() == Triangle.class)
+			if (s instanceof Triangle)
 				drawTriangle(g2d, (Triangle)s);
 		}
-		// Update the canvas with the current shape being drawn...
-		Shape currentShape = shapeManager.getCurrentDrawing();
-		if (currentShape != null) {
-			if (currentShape.getClass() == Rectangle.class)
-				drawRectangle(g2d, (Rectangle)currentShape);
-			if (currentShape.getClass() == Square.class)
-				drawSquare(g2d, (Square)currentShape);
-			if (currentShape.getClass() == Line.class)
-				drawLine(g2d, (Line)currentShape);
-			if (currentShape.getClass() == Ellipse.class)
-				drawEllipse(g2d, (Ellipse)currentShape);
-			if (currentShape.getClass() == Circle.class)
-				drawCircle(g2d, (Circle)currentShape);
-			if (currentShape.getClass() == Triangle.class)
-				drawTriangle(g2d, (Triangle)currentShape);
-		}
 		
-		if (controller.buttonSelected == ButtonSelected.SELECT) {
-			Shape[] topOutline = shapeManager.getTopOutline();
-			Shape[] bottomOutline = shapeManager.getBottomOutline();
-			drawSquare(g2d, (Square)topOutline[0]);
-			drawSquare(g2d, (Square)topOutline[1]);
-			drawSquare(g2d, (Square)bottomOutline[0]);
-			drawSquare(g2d, (Square)bottomOutline[1]);
+		if (controller.buttonSelected == ButtonSelected.SELECT
+				&& handleManager.isSomethingSelected()) {
+			drawSquare(g2d, handleManager.getUpperLeft());
+			drawSquare(g2d, handleManager.getUpperRight());
+			drawSquare(g2d, handleManager.getBottomLeft());
+			drawSquare(g2d, handleManager.getBottomRight());
 		}
 	}
 	
@@ -84,7 +69,7 @@ public class ViewRefresherImpl implements ViewRefresher {
 		int x = s.getXCenter() - width/2;
 		int y = s.getYCenter() - width/2;
 		g2d.setColor(s.getColor());
-		g2d.fillRect(x, y, width, width);
+		g2d.fillRect(0, 0, width, width);
 	}
 	
 	private void drawLine(Graphics2D g2d, Line ln) {

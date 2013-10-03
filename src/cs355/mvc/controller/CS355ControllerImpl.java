@@ -12,8 +12,8 @@ public class CS355ControllerImpl implements CS355Controller {
 	public ButtonSelected buttonSelected;
 	public Color colorSelected;
 
-	// empty constructor to prevent instantiation
-	protected CS355ControllerImpl() {}
+	protected CS355ControllerImpl() {
+	}
 	
 	public static CS355ControllerImpl getInstance() {
 		if (instance == null) {
@@ -32,32 +32,32 @@ public class CS355ControllerImpl implements CS355Controller {
 
 	@Override
 	public void triangleButtonHit() {
-		this.buttonSelected = ButtonSelected.TRIANGLE;
+		this.buttonSelected = ButtonSelected.DRAW_TRIANGLE;
 	}
 
 	@Override
 	public void squareButtonHit() {
-		this.buttonSelected = ButtonSelected.SQUARE;
+		this.buttonSelected = ButtonSelected.DRAW_SQUARE;
 	}
 
 	@Override
 	public void rectangleButtonHit() {
-		this.buttonSelected = ButtonSelected.RECTANGLE;
+		this.buttonSelected = ButtonSelected.DRAW_RECTANGLE;
 	}
 
 	@Override
 	public void circleButtonHit() {
-		this.buttonSelected = ButtonSelected.CIRCLE;
+		this.buttonSelected = ButtonSelected.DRAW_CIRCLE;
 	}
 
 	@Override
 	public void ellipseButtonHit() {
-		this.buttonSelected = ButtonSelected.ELLIPSE;
+		this.buttonSelected = ButtonSelected.DRAW_ELLIPSE;
 	}
 
 	@Override
 	public void lineButtonHit() {
-		this.buttonSelected = ButtonSelected.LINE;
+		this.buttonSelected = ButtonSelected.DRAW_LINE;
 	}
 
 	@Override

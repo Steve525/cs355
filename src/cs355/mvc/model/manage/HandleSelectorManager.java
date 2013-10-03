@@ -53,31 +53,6 @@ public class HandleSelectorManager {
 		bottomRight.setYCenter(brCenter.y + shiftY);
 	}
 	
-	// takes in a shape and outlines it based on its type
-	public void createOutline(Shape selected) {
-		selectedShape = selected;
-		if (selectedShape == null)
-			return;
-		if (selectedShape instanceof Square) {
-			createOutlineForSquare((Square) selectedShape);
-		}
-		else if (selectedShape instanceof Rectangle) {
-			
-		}
-		else if (selectedShape instanceof Circle) {
-			
-		}
-		else if (selectedShape instanceof Ellipse) {
-			
-		}
-		else if (selectedShape instanceof  Line) {
-			
-		}
-		else if (selectedShape instanceof Triangle) {
-			
-		}
-	}
-	
 	// 1, 2, 3 or 4 or 0 if not selected
 	public boolean checkIfSelectedHandles(int qx, int qy) {
 		if (selectedShape == null)
@@ -102,23 +77,110 @@ public class HandleSelectorManager {
 		int xC = selectedShape.getXCenter();
 		int yC = selectedShape.getYCenter();
 		if (whichHandleSelected == 1) {
-			int hxCenter = upperLeft.getXCenter();
-			int hyCenter = upperLeft.getYCenter();
+			int hxCenter = upperLeft.getXCenter(); // handle x center
+			int hyCenter = upperLeft.getYCenter(); // handle y center
 			anchor =
-				new Point(xC + xC - (hxCenter + HIGHLIGHTER_WIDTH), yC + yC - (hyCenter + HIGHLIGHTER_WIDTH));
+				new Point(xC + xC - (hxCenter + HIGHLIGHTER_WIDTH/2), yC + yC - (hyCenter + HIGHLIGHTER_WIDTH/2));
+		}
+		else if (whichHandleSelected == 2) {
+			int hxCenter = upperRight.getXCenter(); // handle x center
+			int hyCenter = upperRight.getYCenter(); // handle y center
+			anchor =
+				new Point(xC - ((hxCenter - HIGHLIGHTER_WIDTH/2) - xC), yC + yC - (hyCenter + HIGHLIGHTER_WIDTH/2));
+		}
+		else if (whichHandleSelected == 3) {
+			int hxCenter = bottomLeft.getXCenter(); // handle x center
+			int hyCenter = bottomLeft.getYCenter(); // handle y center
+			anchor =
+				new Point(xC + (xC - (hxCenter + HIGHLIGHTER_WIDTH/2)),
+							yC - ((hyCenter - HIGHLIGHTER_WIDTH/2) - yC));
+		}
+		else if (whichHandleSelected == 4) {
+			int hxCenter = bottomRight.getXCenter(); // handle x center
+			int hyCenter = bottomRight.getYCenter(); // handle y center
+			anchor =
+				new Point(xC - ((hxCenter - HIGHLIGHTER_WIDTH/2) - xC), yC - ((hyCenter - HIGHLIGHTER_WIDTH/2) - yC));
 		}
 		return anchor;
-			
 	}
 	
-	private void createOutlineForSquare (Square selectedShape) {
-		int xCenter = selectedShape.getXCenter();
-		int yCenter = selectedShape.getYCenter();
-		int d = selectedShape.getWidth() / 2;
+	// takes in a shape and outlines it based on its type
+	public void createOutline(Shape selected) {
+		selectedShape = selected;
+		if (selectedShape == null)
+			return;
+		if (selectedShape instanceof Square) {
+			createOutlineForSquare((Square) selectedShape);
+		}
+		else if (selectedShape instanceof Rectangle) {
+			createOutlineForRectangle((Rectangle)selectedShape);
+		}
+		else if (selectedShape instanceof Circle) {
+			createOutlineForCircle((Circle)selectedShape);
+		}
+		else if (selectedShape instanceof Ellipse) {
+			createOutlineForEllipse((Ellipse)selectedShape);
+		}
+		else if (selectedShape instanceof  Line) {
+			
+		}
+		else if (selectedShape instanceof Triangle) {
+			
+		}
+	}
+	
+	private void createOutlineForSquare (Square selectedSquare) {
+		int xCenter = selectedSquare.getXCenter();
+		int yCenter = selectedSquare.getYCenter();
+		int d = selectedSquare.getWidth() / 2;
 		upperLeft = new Square(xCenter - d - HIGHLIGHTER_WIDTH, yCenter - d - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
 		upperRight= new Square(xCenter + d, yCenter - d - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
 		bottomLeft = new Square(xCenter - d - HIGHLIGHTER_WIDTH, yCenter + d, HIGHLIGHTER_WIDTH, Color.red);
 		bottomRight = new Square(xCenter + d, yCenter + d, HIGHLIGHTER_WIDTH, Color.red);
+		ulCenter = new Point(upperLeft.getXCenter(), upperLeft.getYCenter());
+		urCenter = new Point(upperRight.getXCenter(), upperRight.getYCenter());
+		blCenter = new Point(bottomLeft.getXCenter(), bottomLeft.getYCenter());
+		brCenter = new Point(bottomRight.getXCenter(), bottomRight.getYCenter());
+	}
+	
+	private void createOutlineForCircle (Circle selectedCircle) {
+		int xCenter = selectedCircle.getXCenter();
+		int yCenter = selectedCircle.getYCenter();
+		int d = selectedCircle.getRadius();
+		upperLeft = new Square(xCenter - d - HIGHLIGHTER_WIDTH, yCenter - d - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
+		upperRight= new Square(xCenter + d, yCenter - d - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
+		bottomLeft = new Square(xCenter - d - HIGHLIGHTER_WIDTH, yCenter + d, HIGHLIGHTER_WIDTH, Color.red);
+		bottomRight = new Square(xCenter + d, yCenter + d, HIGHLIGHTER_WIDTH, Color.red);
+		ulCenter = new Point(upperLeft.getXCenter(), upperLeft.getYCenter());
+		urCenter = new Point(upperRight.getXCenter(), upperRight.getYCenter());
+		blCenter = new Point(bottomLeft.getXCenter(), bottomLeft.getYCenter());
+		brCenter = new Point(bottomRight.getXCenter(), bottomRight.getYCenter());
+	}
+	
+	private void createOutlineForRectangle (Rectangle rectangle) {
+		int xCenter = rectangle.getXCenter();
+		int yCenter = rectangle.getYCenter();
+		int width = rectangle.getWidth() / 2;
+		int height = rectangle.getHeight() / 2;
+		upperLeft = new Square(xCenter - width - HIGHLIGHTER_WIDTH, yCenter - height - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
+		upperRight= new Square(xCenter + width, yCenter - height - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
+		bottomLeft = new Square(xCenter - width - HIGHLIGHTER_WIDTH, yCenter + height, HIGHLIGHTER_WIDTH, Color.red);
+		bottomRight = new Square(xCenter + width, yCenter + height, HIGHLIGHTER_WIDTH, Color.red);
+		ulCenter = new Point(upperLeft.getXCenter(), upperLeft.getYCenter());
+		urCenter = new Point(upperRight.getXCenter(), upperRight.getYCenter());
+		blCenter = new Point(bottomLeft.getXCenter(), bottomLeft.getYCenter());
+		brCenter = new Point(bottomRight.getXCenter(), bottomRight.getYCenter());
+	}
+	
+	private void createOutlineForEllipse (Ellipse ellipse) {
+		int xCenter = ellipse.getXCenter();
+		int yCenter = ellipse.getYCenter();
+		int width = ellipse.getWidth() / 2;
+		int height = ellipse.getHeight() / 2;
+		upperLeft = new Square(xCenter - width - HIGHLIGHTER_WIDTH, yCenter - height - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
+		upperRight= new Square(xCenter + width, yCenter - height - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
+		bottomLeft = new Square(xCenter - width - HIGHLIGHTER_WIDTH, yCenter + height, HIGHLIGHTER_WIDTH, Color.red);
+		bottomRight = new Square(xCenter + width, yCenter + height, HIGHLIGHTER_WIDTH, Color.red);
 		ulCenter = new Point(upperLeft.getXCenter(), upperLeft.getYCenter());
 		urCenter = new Point(upperRight.getXCenter(), upperRight.getYCenter());
 		blCenter = new Point(bottomLeft.getXCenter(), bottomLeft.getYCenter());

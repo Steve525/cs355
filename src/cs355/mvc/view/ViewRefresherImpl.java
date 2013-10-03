@@ -53,6 +53,8 @@ public class ViewRefresherImpl implements ViewRefresher {
 			drawSquare(g2d, handleManager.getBottomLeft());
 			drawSquare(g2d, handleManager.getBottomRight());
 		}
+		
+//		System.out.println("Number of shapes: " + shapes.size());
 	}
 	
 	private void drawRectangle(Graphics2D g2d, Rectangle r) {

@@ -1,5 +1,6 @@
 package cs355.mvc.controller;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class MyListener extends MouseInputAdapter {
 	private Shape shapeSelected;
 	private boolean initializeShape;
 	private boolean handlesSelected = false;
+	private Point anchor;
 	
 	private List<Point> trianglePoints;
 	
@@ -51,11 +53,12 @@ public class MyListener extends MouseInputAdapter {
 			// a shape has already been selected and now the handles have been selected
 			if (handleManager.checkIfSelectedHandles(e.getX(), e.getY())) {
 				handlesSelected = true;
+				anchor = handleManager.getAnchorPoint();
 			}
 			else {
 				shapeSelected = shapeManager.select(e.getX(), e.getY());
-				handleManager.createOutline(shapeSelected);
 				shapeManager.setSelectedShape(shapeSelected);
+				handleManager.createOutline(shapeSelected);
 			}
 			GUIFunctions.refresh();
 		}
@@ -74,12 +77,13 @@ public class MyListener extends MouseInputAdapter {
 		if (buttonSelected == null || buttonSelected == ButtonSelected.DRAW_TRIANGLE)
 			return;
 		if (buttonSelected == ButtonSelected.SELECT) {
-			if (handlesSelected) {	// start resizing shape
-				System.out.println("RESIZING...");
-				Point anchor = handleManager.getAnchorPoint();
+			if (handlesSelected) {	// resizing shape
 				createOrUpdateShape(e, Action.UPDATE_SELECTED, anchor);
+				handleManager.createOutline(shapeManager.getSelectedShape());
+				System.out.println(anchor.x + " " + anchor.y);
 			}
 			else if (handleManager.isSomethingSelected()) {	// dragging shape
+				System.out.println("shifting..");
 				int xShift = e.getX() - pointClicked.x;
 				int yShift = e.getY() - pointClicked.y;
 				shapeManager.shiftShape(xShift, yShift);
@@ -118,7 +122,7 @@ public class MyListener extends MouseInputAdapter {
 		Shape shape = null;
 		switch (buttonSelected) {
 		case DRAW_RECTANGLE:
-			shape = updateRectangle(e);
+			shape = updateRectangle(e, anchor);
 			break;
 		case DRAW_SQUARE:
 			shape = updateSquare(e, anchor);
@@ -127,27 +131,40 @@ public class MyListener extends MouseInputAdapter {
 			shape = updateLine(e);
 			break;
 		case DRAW_ELLIPSE:
-			shape = updateEllipse(e);
+			shape = updateEllipse(e, anchor);
 			break;
 		case DRAW_CIRCLE:
-			shape = updateCircle(e);
+			shape = updateCircle(e, anchor);
 			break;
 		case DRAW_TRIANGLE:
 			shape = updateTriangle(e);
 			break;
+		case SELECT:
+			if (handleManager.getSelectedShape() instanceof Square) {
+				shape = updateSquare(e, anchor);
+			}
+			else if (handleManager.getSelectedShape() instanceof Circle) {
+				shape = updateCircle(e, anchor);
+			}
+			else if (handleManager.getSelectedShape() instanceof Rectangle) {
+				shape = updateRectangle(e, anchor);
+			}
+			else if (handleManager.getSelectedShape() instanceof Ellipse) {
+				shape = updateEllipse(e, anchor);
+			}
 		default:
 			break;
 		}
 		return shape;
 	}
 	
-	private Shape updateRectangle(MouseEvent e) {
+	private Shape updateRectangle(MouseEvent e, Point anchor) {
 		int x = e.getX();
 		int y = e.getY();
-		int width = x - pointClicked.x;
-		int height = y - pointClicked.y;
-		int ul_x = pointClicked.x;
-		int ul_y = pointClicked.y;
+		int width = x - anchor.x;
+		int height = y - anchor.y;
+		int ul_x = anchor.x;
+		int ul_y = anchor.y;
 		if (width < 0) {
 			width = 0 - width;
 			ul_x = x;
@@ -156,7 +173,12 @@ public class MyListener extends MouseInputAdapter {
 			height = 0 - height;
 			ul_y = y;
 		}
-		Shape r = new Rectangle(ul_x, ul_y, height, width, controller.colorSelected);
+		Color c = null;
+		if (buttonSelected == ButtonSelected.SELECT)
+			c = shapeSelected.getColor();
+		else
+			c = controller.colorSelected;
+		Shape r = new Rectangle(ul_x, ul_y, height, width, c);
 		return r;
 	}
 	
@@ -174,24 +196,34 @@ public class MyListener extends MouseInputAdapter {
 		if (height < 0) {
 			ul_y = ul_y - shortestSide;
 		}
-		Shape sq = new Square(ul_x, ul_y, shortestSide, controller.colorSelected);
+		Color c = null;
+		if (buttonSelected == ButtonSelected.SELECT)
+			c = shapeSelected.getColor();
+		else
+			c = controller.colorSelected;
+		Shape sq = new Square(ul_x, ul_y, shortestSide, c);
 		return sq;
 	}
 	
 	private Shape updateLine(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
-		Shape ln = new Line(pointClicked.x, pointClicked.y, x, y, controller.colorSelected);
+		Color c = null;
+		if (buttonSelected == ButtonSelected.SELECT)
+			c = shapeSelected.getColor();
+		else
+			c = controller.colorSelected;
+		Shape ln = new Line(pointClicked.x, pointClicked.y, x, y, c);
 		return ln;
 	}
 	
-	private Shape updateEllipse(MouseEvent e) {
+	private Shape updateEllipse(MouseEvent e, Point anchor) {
 		int x = e.getX();
 		int y = e.getY();
-		int width = x - pointClicked.x;
-		int height = y - pointClicked.y;
-		int ul_x = pointClicked.x;
-		int ul_y = pointClicked.y;
+		int width = x - anchor.x;
+		int height = y - anchor.y;
+		int ul_x = anchor.x;
+		int ul_y = anchor.y;
 		if (width < 0) {
 			width = 0 - width;
 			ul_x = x;
@@ -202,18 +234,23 @@ public class MyListener extends MouseInputAdapter {
 		}
 		ul_x = ul_x + width/2;
 		ul_y = ul_y + height/2;
+		Color c = null;
+		if (buttonSelected == ButtonSelected.SELECT)
+			c = shapeSelected.getColor();
+		else
+			c = controller.colorSelected;
 		// ul_x and ul_y are now the center of the ellipse
-		Shape ellipse = new Ellipse(ul_x, ul_y, height, width, controller.colorSelected);
+		Shape ellipse = new Ellipse(ul_x, ul_y, height, width, c);
 		return ellipse;
 	}
 	
-	private Shape updateCircle(MouseEvent e) {
+	private Shape updateCircle(MouseEvent e, Point anchor) {
 		int x = e.getX();
 		int y = e.getY();
-		int width = x - pointClicked.x;
-		int height = y - pointClicked.y;
-		int ul_x = pointClicked.x;
-		int ul_y = pointClicked.y;
+		int width = x - anchor.x;
+		int height = y - anchor.y;
+		int ul_x = anchor.x;
+		int ul_y = anchor.y;
 		int shortestSide = Math.min(Math.abs(width), Math.abs(height));
 		if (width < 0) {
 			ul_x = ul_x - shortestSide;
@@ -224,8 +261,13 @@ public class MyListener extends MouseInputAdapter {
 		int radius = shortestSide/2;
 		ul_x = ul_x + radius;
 		ul_y = ul_y + radius;
+		Color c = null;
+		if (buttonSelected == ButtonSelected.SELECT)
+			c = shapeSelected.getColor();
+		else
+			c = controller.colorSelected;
 		// ul_x and ul_y are now the center of the circle
-		Shape circle = new Circle(ul_x, ul_y, radius, controller.colorSelected);
+		Shape circle = new Circle(ul_x, ul_y, radius, c);
 		return circle;
 	}
 	
@@ -240,7 +282,12 @@ public class MyListener extends MouseInputAdapter {
 		y[2] = trianglePoints.get(2).y;
 		int center_x = (x[0] + x[1] + x[2]) / 3;
 		int center_y = (y[0] + y[1] + y[2]) / 3;
-		Shape triangle = new Triangle(x, y, center_x, center_y, controller.colorSelected);
+		Color c = null;
+		if (buttonSelected == ButtonSelected.SELECT)
+			c = shapeSelected.getColor();
+		else
+			c = controller.colorSelected;
+		Shape triangle = new Triangle(x, y, center_x, center_y, c);
 		trianglePoints.clear();
 		return triangle;
 	}

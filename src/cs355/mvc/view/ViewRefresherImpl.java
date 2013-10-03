@@ -69,7 +69,7 @@ public class ViewRefresherImpl implements ViewRefresher {
 		int x = s.getXCenter() - width/2;
 		int y = s.getYCenter() - width/2;
 		g2d.setColor(s.getColor());
-		g2d.fillRect(0, 0, width, width);
+		g2d.fillRect(x, y, width, width);
 	}
 	
 	private void drawLine(Graphics2D g2d, Line ln) {

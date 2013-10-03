@@ -1,6 +1,7 @@
 package cs355.mvc.model.manage;
 
 import java.awt.Color;
+import java.awt.Point;
 
 import cs355.mvc.model.Circle;
 import cs355.mvc.model.Ellipse;
@@ -15,15 +16,15 @@ public class HandleSelectorManager {
 	private static HandleSelectorManager instance = null;
 
 	private Shape upperLeft;
-	private int xul, yul;
+	private Point ulCenter;
 	private Shape upperRight;
-	private int xur, yur;
+	private Point urCenter;
 	private Shape bottomLeft;
-	private int xbl, ybl;
+	private Point blCenter;
 	private Shape bottomRight;
-	private int xbr, lbr;
+	private Point brCenter;
 	
-	private boolean somethingSelected = false;
+	private int whichHandleSelected = 0;
 	
 	private ShapeManager shapeManager;
 	private Shape selectedShape;
@@ -42,8 +43,17 @@ public class HandleSelectorManager {
 	}
 	
 	public void shiftHandles(int shiftX, int shiftY) {
+		upperLeft.setXCenter(ulCenter.x + shiftX);
+		upperLeft.setYCenter(ulCenter.y + shiftY);
+		upperRight.setXCenter(urCenter.x + shiftX);
+		upperRight.setYCenter(urCenter.y + shiftY);
+		bottomLeft.setXCenter(blCenter.x + shiftX);
+		bottomLeft.setYCenter(blCenter.y + shiftY);
+		bottomRight.setXCenter(brCenter.x + shiftX);
+		bottomRight.setYCenter(brCenter.y + shiftY);
 	}
 	
+	// takes in a shape and outlines it based on its type
 	public void createOutline(Shape selected) {
 		selectedShape = selected;
 		if (selectedShape == null)
@@ -68,6 +78,39 @@ public class HandleSelectorManager {
 		}
 	}
 	
+	// 1, 2, 3 or 4 or 0 if not selected
+	public boolean checkIfSelectedHandles(int qx, int qy) {
+		if (selectedShape == null)
+			return false;
+		if (shapeManager.testInSquare((Square)upperLeft, qx, qy))
+			whichHandleSelected = 1;
+		else if (shapeManager.testInSquare((Square)upperRight, qx, qy))
+			whichHandleSelected = 2;
+		else if(shapeManager.testInSquare((Square)bottomLeft, qx, qy))
+			whichHandleSelected = 3;
+		else if(shapeManager.testInSquare((Square)bottomRight, qx, qy))
+			whichHandleSelected = 4;
+		else
+			whichHandleSelected = 0;
+		if (whichHandleSelected == 0)
+			return false;
+		return true;
+	}
+	
+	public Point getAnchorPoint() {
+		Point anchor = null;
+		int xC = selectedShape.getXCenter();
+		int yC = selectedShape.getYCenter();
+		if (whichHandleSelected == 1) {
+			int hxCenter = upperLeft.getXCenter();
+			int hyCenter = upperLeft.getYCenter();
+			anchor =
+				new Point(xC + xC - (hxCenter + HIGHLIGHTER_WIDTH), yC + yC - (hyCenter + HIGHLIGHTER_WIDTH));
+		}
+		return anchor;
+			
+	}
+	
 	private void createOutlineForSquare (Square selectedShape) {
 		int xCenter = selectedShape.getXCenter();
 		int yCenter = selectedShape.getYCenter();
@@ -76,8 +119,10 @@ public class HandleSelectorManager {
 		upperRight= new Square(xCenter + d, yCenter - d - HIGHLIGHTER_WIDTH, HIGHLIGHTER_WIDTH, Color.red);
 		bottomLeft = new Square(xCenter - d - HIGHLIGHTER_WIDTH, yCenter + d, HIGHLIGHTER_WIDTH, Color.red);
 		bottomRight = new Square(xCenter + d, yCenter + d, HIGHLIGHTER_WIDTH, Color.red);
-		xul = upperLeft.getXCenter();
-		yul = upperLeft.getYCenter();
+		ulCenter = new Point(upperLeft.getXCenter(), upperLeft.getYCenter());
+		urCenter = new Point(upperRight.getXCenter(), upperRight.getYCenter());
+		blCenter = new Point(bottomLeft.getXCenter(), bottomLeft.getYCenter());
+		brCenter = new Point(bottomRight.getXCenter(), bottomRight.getYCenter());
 	}
 	
 	public Square getUpperLeft() {

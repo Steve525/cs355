@@ -26,10 +26,9 @@ public class MyListener extends MouseInputAdapter {
 	ButtonSelected buttonSelected;
 	
 	private Point pointClicked;
-	private int xOrigin;
-	private int yOrigin;
 	private Shape shapeSelected;
 	private boolean initializeShape;
+	private boolean handlesSelected = false;
 	
 	private List<Point> trianglePoints;
 	
@@ -47,18 +46,25 @@ public class MyListener extends MouseInputAdapter {
 			return;
 		
 		pointClicked = e.getPoint();
+		// MAKING A SELECTION
 		if (buttonSelected == ButtonSelected.SELECT) {
-			shapeSelected = select(e.getX(), e.getY()); // index of shape in list
-			xOrigin = shapeSelected.getXCenter();
-			yOrigin = shapeSelected.getYCenter();
-			handleManager.createOutline(shapeSelected);	
+			// a shape has already been selected and now the handles have been selected
+			if (handleManager.checkIfSelectedHandles(e.getX(), e.getY())) {
+				handlesSelected = true;
+			}
+			else {
+				shapeSelected = shapeManager.select(e.getX(), e.getY());
+				handleManager.createOutline(shapeSelected);
+				shapeManager.setSelectedShape(shapeSelected);
+			}
 			GUIFunctions.refresh();
 		}
+		// DRAWING A TRIANGLE
 		else if (buttonSelected == ButtonSelected.DRAW_TRIANGLE) {
 			if (trianglePoints.size() < 3)
 				trianglePoints.add(e.getPoint());
 			if (trianglePoints.size() == 3) {
-				createOrUpdateShape(e, Action.STARTED_DRAWING);
+				createOrUpdateShape(e, Action.STARTED_DRAWING, pointClicked);
 				trianglePoints.clear();
 			}
 		}
@@ -68,23 +74,26 @@ public class MyListener extends MouseInputAdapter {
 		if (buttonSelected == null || buttonSelected == ButtonSelected.DRAW_TRIANGLE)
 			return;
 		if (buttonSelected == ButtonSelected.SELECT) {
-			if (shapeSelected != null) {	// shape has been selected, now we're dragging
-				// new center is shifted by distance between point clicked and event point
+			if (handlesSelected) {	// start resizing shape
+				System.out.println("RESIZING...");
+				Point anchor = handleManager.getAnchorPoint();
+				createOrUpdateShape(e, Action.UPDATE_SELECTED, anchor);
+			}
+			else if (handleManager.isSomethingSelected()) {	// dragging shape
 				int xShift = e.getX() - pointClicked.x;
 				int yShift = e.getY() - pointClicked.y;
-				System.out.println("xShift: " + xShift + " yShift: " + yShift);
-				shapeSelected.setXCenter(xOrigin + xShift);
-				shapeSelected.setYCenter(yOrigin + yShift);
+				shapeManager.shiftShape(xShift, yShift);
+				handleManager.shiftHandles(xShift, yShift);
 				GUIFunctions.refresh();
 			}
 		}
 		else {
 			if (initializeShape) {
-				createOrUpdateShape(e, Action.STARTED_DRAWING);
+				createOrUpdateShape(e, Action.STARTED_DRAWING, pointClicked);
 				initializeShape = false;
 			}
 			else {
-				createOrUpdateShape(e, Action.CURRENTLY_DRAWING);
+				createOrUpdateShape(e, Action.CURRENTLY_DRAWING, pointClicked);
 			}
 		}
 	}
@@ -93,24 +102,26 @@ public class MyListener extends MouseInputAdapter {
 		if (buttonSelected == null || buttonSelected == ButtonSelected.DRAW_TRIANGLE)
 			return;
 		if (!initializeShape) {
-			createOrUpdateShape(e, Action.FINISHED_DRAWING);
+			createOrUpdateShape(e, Action.FINISHED_DRAWING, pointClicked);
 			initializeShape = true;
 		}
+		handlesSelected = false;
 	}
 	
-	private void createOrUpdateShape(MouseEvent e, Action action) {
-		shapeManager.addShape(updateSize(e), action);
+	private void createOrUpdateShape(MouseEvent e, Action action, Point anchor) {
+		shapeManager.addShape(updateSize(e, anchor), action);
 		GUIFunctions.refresh();
 	}
 	
-	private Shape updateSize(MouseEvent e) {
+	// i need to include an action for updating shapes
+	private Shape updateSize(MouseEvent e, Point anchor) {
 		Shape shape = null;
 		switch (buttonSelected) {
 		case DRAW_RECTANGLE:
 			shape = updateRectangle(e);
 			break;
 		case DRAW_SQUARE:
-			shape = updateSquare(e);
+			shape = updateSquare(e, anchor);
 			break;
 		case DRAW_LINE:
 			shape = updateLine(e);
@@ -149,13 +160,13 @@ public class MyListener extends MouseInputAdapter {
 		return r;
 	}
 	
-	private Shape updateSquare(MouseEvent e) {
+	private Shape updateSquare(MouseEvent e, Point anchor) {
 		int x = e.getX();
 		int y = e.getY();
-		int width = x - pointClicked.x;
-		int height = y - pointClicked.y;
-		int ul_x = pointClicked.x;
-		int ul_y = pointClicked.y;
+		int width = x - anchor.x;
+		int height = y - anchor.y;
+		int ul_x = anchor.x;
+		int ul_y = anchor.y;
 		int shortestSide = Math.min(Math.abs(width), Math.abs(height));
 		if (width < 0) {
 			ul_x = ul_x - shortestSide;
@@ -232,44 +243,6 @@ public class MyListener extends MouseInputAdapter {
 		Shape triangle = new Triangle(x, y, center_x, center_y, controller.colorSelected);
 		trianglePoints.clear();
 		return triangle;
-	}
-	
-	private Shape select(int qx, int qy) {
-		List<Shape> shapes = shapeManager.getShapes();
-		for (int i = shapes.size() - 1; i >= 0; i--) {
-			Shape shape = shapes.get(i);
-			if (shape instanceof Square) {
-				if (testInSquare((Square) shape, qx, qy)) {
-					System.out.println("Square selected!");
-					return shape;
-				}
-			}
-			
-		}
-		return null;
-	}
-	
-	// 1, 2, 3 or 4 or 0 if not selected
-	private int checkIfSelectedHandles(int qx, int qy) {
-		if (testInSquare(handleManager.getUpperLeft(), qx, qy))
-			return 1;
-		else if (testInSquare(handleManager.getUpperRight(), qx, qy))
-			return 2;
-		else if(testInSquare(handleManager.getBottomLeft(), qx, qy))
-			return 3;
-		else if(testInSquare(handleManager.getBottomRight(), qx, qy))
-			return 4;
-		
-		return 0;
-	}
-	
-	private boolean testInSquare(Square square, int qx, int qy) {
-		int x = square.getXCenter();
-		int y = square.getYCenter();
-		int d = square.getWidth() / 2;
-		if (Math.abs(qx - x) <= d && Math.abs(qy - y) <= d)
-			return true;
-		return false;
 	}
 	
 }

@@ -20,6 +20,10 @@ public abstract class Shape {
 		return color;
 	}
 	
+	public void setColor(Color c) {
+		this.color = c;
+	}
+	
 	public double getRotation() {
 		return rotation_radians;
 	}

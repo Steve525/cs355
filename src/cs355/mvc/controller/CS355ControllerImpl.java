@@ -4,6 +4,8 @@ import java.awt.Color;
 
 import cs355.CS355Controller;
 import cs355.GUIFunctions;
+import cs355.mvc.model.Shape;
+import cs355.mvc.model.manage.ShapeManager;
 
 public class CS355ControllerImpl implements CS355Controller {
 
@@ -11,8 +13,10 @@ public class CS355ControllerImpl implements CS355Controller {
 	
 	public ButtonSelected buttonSelected;
 	public Color colorSelected;
+	public ShapeManager shapeManager;
 
 	protected CS355ControllerImpl() {
+		shapeManager = ShapeManager.getInstance();
 	}
 	
 	public static CS355ControllerImpl getInstance() {
@@ -28,6 +32,15 @@ public class CS355ControllerImpl implements CS355Controller {
 			GUIFunctions.changeSelectedColor(c);
 			colorSelected = c;
 		}
+		if (buttonSelected == ButtonSelected.SELECT
+				&& shapeManager.getSelectedShape() != null) {
+			shapeManager.getSelectedShape().setColor(c);
+		}
+	}
+	
+	private void deselectCurrentShape() {
+		Shape s = shapeManager.getSelectedShape();
+		s = null;
 	}
 
 	@Override
@@ -38,6 +51,7 @@ public class CS355ControllerImpl implements CS355Controller {
 	@Override
 	public void squareButtonHit() {
 		this.buttonSelected = ButtonSelected.DRAW_SQUARE;
+		deselectCurrentShape();
 	}
 
 	@Override
